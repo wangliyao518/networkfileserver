@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>python做的网盘</title>
+</head>
+<body>
+<style>
+    html {
+        font-size: 16px; /*根元素字体大小*/
+    }
+
+    * {
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box; /*默认盒模型*/
+    }
+
+    body {
+        background-color: #ededed; /*这个是整个网页的基础背景色，我准备页头和页脚直接暴露此颜色*/
+        padding: 0;
+        margin: 0;
+    }
+
+    a {
+        text-decoration: none; /*取消下划线*/
+    }
+
+    /**常用设置**/
+    /*通栏*/
+    .rowline {
+        width: 100%;
+    }
+
+    /*表格*/
+    .table {
+        display: table;
+        width: 100%;
+    }
+
+    /*表格行*/
+    .table-row {
+        display: table-row;
+    }
+
+    /***************本页面特需的一些定义***********************/
+    .left { /*左边栏*/
+        display: table-cell;
+        width: 10rem; /*意思在资源充足的情况下默认宽度*/
+        min-width: 10rem; /*意思在宽度不够情况下最起码保持宽度(用滚动条解决)*/
+        vertical-align: top;
+        /*background-color: #FBF90B;*/
+    }
+
+    .right { /*右边栏*/
+        display: table-cell;
+        width: 10rem; /*意思在资源充足的情况下默认宽度*/
+        min-width: 10rem; /*意思在宽度不够情况下最起码保持宽度(用滚动条解决)*/
+        vertical-align: top;
+        /*background-color: #FBF90B;*/
+    }
+
+    .middle { /*中栏*/
+        display: table-cell;
+        min-width: 30rem; /*中间最小宽度保护*/
+        vertical-align: top;
+        /*background-color: #43fbf1;*/
+    }
+
+    /*居中的正文块（默认的左对齐）*/
+    .centerdiv {
+        margin: 0 auto;
+        padding: 0 1rem;
+        max-width: 60rem;
+        overflow: hidden;
+        /*line-height:1.2rem;!*正文块默认行距*!*/
+        font-size: 0.8rem; /*正文块默认字体大小*/
+        font-family: 'Bree Serif', serif; /*正文块默认字体*/
+    }
+
+    .topline {
+        text-align: center;
+        padding: 0.2rem 0;
+    }
+
+    #logo span {
+        vertical-align: middle;
+        font-size: 1.8rem;
+        font-family: 'Bree Serif', serif;
+        margin-left: .2em;
+    }
+
+    #logo a {
+        text-decoration: none;
+        color: #414142;
+        position: relative;
+    }
+
+    #logo img {
+        vertical-align: middle;
+    }
+
+    .mainarea {
+        background-color: #FFFFFF;
+    }
+
+    .uploadform {
+        border: solid 1px #000;
+        border-radius: 7px;
+        padding: 20px;
+    }
+
+    .selectf {
+        width: 60%;
+        background-color: cornflowerblue;
+    }
+
+    .bordered {
+        *border-collapse: collapse; /* IE7 and lower */
+        border-spacing: 0; /*相邻单元格的边框间的距离（仅用于“边框分离”模式）*/
+        width: 100%; /*占满父控件宽度*/
+        border: solid #ccc 1px; /*表格外框 单线1像素*/
+        -webkit-box-shadow: 0 1px 1px #ccc; /*表格阴影*/
+        -moz-box-shadow: 0 1px 1px #ccc; /*表格阴影*/
+        box-shadow: 0 1px 1px #ccc; /*表格阴影*/
+        -moz-border-radius: 6px; /*表格圆角*/
+        -webkit-border-radius: 6px; /*表格圆角*/
+        border-radius: 6px; /*表格圆角*/
+        text-align: left; /*文字默认对齐方式*/
+    }
+
+    .bordered td:hover {
+        /*background: #fb4c24;                !*鼠标移动位置变颜色，如果要一格变色用td:hover,如果整行变色用trhover*!*/
+        /*color: #FFFFFF;*/
+    }
+
+    .bordered th { /*标题单元格*/
+        text-align: center; /*默认就是居中，这里强调一下*/
+    }
+
+    .bordered td, /*所有单元格*/
+    .bordered th {
+        border-left: 1px solid #ccc; /*绘制左、上边线*/
+        border-top: 1px solid #ccc;
+        padding: 3px; /*统一内留白*/
+    }
+
+    .bordered th { /*标题单元格*/
+        border-top: none; /*上边线和外框重合，所以不需要了*/
+        text-align: center; /*默认就是居中，这里强调一下*/
+    }
+
+    .bordered td:first-child, /*所有最左列的单元格*/
+    .bordered th:first-child {
+        border-left: none; /*左边线和外框重合，所以不需要了*/
+        background-color: #FBF90B; /*加个背景，CSS是有序的，这个背景在单元格hover后定义，变色就不影响第一列了*/
+    }
+
+    .bordered a {
+        text-decoration: none; /*取消下划线*/
+    }
+
+    .bordered a:hover {
+        color: #FFFFFF;
+    }
+
+    .bordered th:first-child {
+        -moz-border-radius: 6px 0 0 0;
+        -webkit-border-radius: 6px 0 0 0;
+        border-radius: 6px 0 0 0;
+    }
+
+    .bordered th:last-child {
+        -moz-border-radius: 0 6px 0 0;
+        -webkit-border-radius: 0 6px 0 0;
+        border-radius: 0 6px 0 0;
+    }
+
+    .bordered tr:last-child td:first-child {
+        -moz-border-radius: 0 0 0 6px;
+        -webkit-border-radius: 0 0 0 6px;
+        border-radius: 0 0 0 6px;
+    }
+
+    .bordered tr:last-child td:last-child {
+        -moz-border-radius: 0 0 6px 0;
+        -webkit-border-radius: 0 0 6px 0;
+        border-radius: 0 0 6px 0;
+    }
+
+    .std {
+        text-align: left;
+        background-color: #feffb0;
+        cursor: pointer; /*手指鼠标*/
+    }
+
+    .std:hover {
+        background-color: #CC0000;
+        color: #FFFFFF;
+    }
+
+    .std:hover a {
+        color: #FFFFFF;
+    }
+
+
+</style>
+
+<div class="table">
+    <div class="left"></div>
+    <div class="middle topline">
+        <div id="logo">
+
+            <div style="display: inline-block;vertical-align: middle;">
+                <img src="static/logook.jpg" style="width: 180px"/>
+            </div>
+            <div style="display: inline-block;vertical-align: middle;">
+                <p style="vertical-align: middle;font-size: 1.5rem;margin: 0;">
+                    <b>用python做的网盘</b>
+                </p>
+            </div>
+            </a>
+        </div>
+    </div>
+    <div class="right"></div>
+</div>
+
+<div class="rowline mainarea">
+    <div class="table">
+        <div class="table-row" style="height: 3px;">
+            <div class="left"></div>
+            <div class="middle"></div>
+            <div class="right"></div>
+        </div>
+        <div class="left">
+
+        </div>
+        <div class="middle">
+            <div class="centerdiv">
+                <table class="bordered">
+                    <tr>
+                        <th>序号</th>
+                        <th>文件名</th>
+                        <th>文件长度</th>
+                        <th>上传时间</th>
+                        <th> </th>
+                    </tr>
+                    {% set index = 0 %}
+                    {%for rec in catalogrec%}
+                    {% set index=index+1 %}
+                    <tr>
+                        <td style="text-align: center">{{ index}}</td>
+                        <td class="std"><a href="{{rec['url']}}">{{rec['fname']}}</a></td>
+                        <td style="text-align: right">{{rec['fsize']}}</td>
+                        <td style="text-align: center">{{rec['ftime']}}</td>
+                        <td class="std" style="text-align: center"><a href="{{rec['delurl']}}">删除</a></td>
+                    </tr>
+                    {%end%}
+
+                </table>
+                <hr/>
+                <h1>继续上传</h1>
+                <form action="upload" method="post" enctype="multipart/form-data" class="uploadform">
+                    <input type="file" name="myuploadfile" class="selectf">
+                    <input type="submit" value="上传">
+                </form>
+                <hr/>
+            </div>
+            <div class="right">
+
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
+
